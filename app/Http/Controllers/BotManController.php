@@ -7,24 +7,9 @@ use App\Conversations\FlowQuotasConversation;
 use BotMan\BotMan\BotMan;
 use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\Question;
-use Illuminate\Http\Request;
 
 class BotManController extends Controller
 {
-
-    private $questionsQuotas = [
-        'R1' => [1, 1, 1, 1],
-        'R2' => [1, 0, 1, 1],
-        'R3' => [0, 1, 1, 1],
-        'R4' => [0, 0, 1, 1],
-        'R5' => [1, 1, 1, 0],
-        'R6' => [1, 0, 1, 0],
-        'R7' => [0, 1, 1, 0],
-        'R8' => [0, 0, 1, 0],
-    ];
-
-    private $typeQuota;
-
 
     /**
      * Place your BotMan logic here.
@@ -67,8 +52,11 @@ class BotManController extends Controller
         $apiReply = $extras['apiReply'];
         $apiAction = $extras['apiAction'];
         $apiIntent = $extras['apiIntent'];
+        if($apiIntent == "ps.rac.ppi"){
+            session_destroy();
+        }
 
-        if ($apiReply != null) {
+        if ($apiReply != null || $apiIntent != "ps.rac.ppi - renda" || $apiIntent != "ps.rac.ppi - renda") {
             $question = Question::create($apiReply)
                 ->fallback('Unable to ask question')
                 ->callbackId('ask_reason')
@@ -78,35 +66,17 @@ class BotManController extends Controller
                 ]);
         }
 
-
         if ($reply == "sim") {
             $_SESSION['reply'][] = 1;
-        } else {
-            if ($reply == "não") {
-
+        } else if ($reply == "não") {
                 $_SESSION['reply'][] = 0;
-            }
         }
-
-        $bot->reply($question);
-        if ($apiIntent == "ps.rac.ppi - renda - no" || $apiIntent == "ps.rac.ppi - renda - yes") {
+        if ($apiIntent == "ps.rac.ppi - renda" || $apiIntent == "ps.rac.ppi - renda"){
             $bot->startConversation(new FLowQuestionsQuotasConversation($apiReply));
         }
-    }
-
-
-    public function verificaArray()
-    {
-        session_start();
-
-        foreach ($this->questionsQuotas as $key => $value) {
-            if ($_SESSION['reply'] === $value) {
-                $this->typeQuota = $key;
-            }
-
-            return $this->typeQuota;
+        else {
+            $bot->reply($question);
         }
     }
-
 
 }
