@@ -11,7 +11,7 @@ $botman->hears('Hi', function ($bot) {
 });
 
 
-$dialogflow = ApiAi::create('770c6958e53d4b2f81e4d8a4df7fb716')->listenForAction();
+$dialogflow = ApiAi::create('6362d4faf2f9447b9c04ba78a1562083')->listenForAction();
 $botman->middleware->received($dialogflow);
 $botman->hears('ps.reservaDeVagas', ReservationOfVacanciesController::class . '@flowQuotas')->middleware($dialogflow);
 $botman->hears('ps(.*)|{reply}', ReservationOfVacanciesController::class . '@flowQuestionsQuotas')->middleware($dialogflow);
