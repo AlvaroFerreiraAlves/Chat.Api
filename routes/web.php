@@ -22,3 +22,6 @@ Route::get('cota', 'BotManController@verificaArray');
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('admin/frases-treinamento', 'TrainingPhraseController@index')->name('admin.trainingphrases')->middleware('auth');
+Route::get('admin/frases-treinamento/download/{status}', 'TrainingPhraseController@downlaodFilePhrases')->name('admin.downlaodfilephrases')->middleware('auth');
+Route::any('admin/frases-treinamento/pesquisar', 'TrainingPhraseController@searchPhrases')->name('admin.searchphrases')->middleware('auth');
