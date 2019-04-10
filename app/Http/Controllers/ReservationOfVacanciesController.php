@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Conversations\FlowQuotasConversation;
+use App\Models\DialogFLow;
 use BotMan\BotMan\BotMan;
 use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\Question;
@@ -23,10 +24,6 @@ class ReservationOfVacanciesController extends Controller
 
     private $typeQuota;
 
-    private $apiReply;
-    private $apiAction;
-    private $apiIntent;
-
     public function handle()
     {
         $botman = app('botman');
@@ -36,27 +33,26 @@ class ReservationOfVacanciesController extends Controller
 
     public function flowQuotas(BotMan $bot)
     {
-        $this->hearsDialogFlow($bot);
-
-        $bot->startConversation(new FlowQuotasConversation($this->apiReply));
+        $dialogFlow = new DialogFLow($bot);
+        $bot->startConversation(new FlowQuotasConversation($dialogFlow->getApiReply()));
     }
 
     public function flowQuestionsQuotas(BotMan $bot, $reply)
     {
         session_start();
-        $this->hearsDialogFlow($bot);
+        $dialogFlow = new DialogFLow($bot);
 
-        if ($this->apiIntent == "ps.rac.ppi" && isset($_SESSION['reply'])) {
+        if ($dialogFlow->getApiIntent() == "ps.rac.ppi" && isset($_SESSION['reply'])) {
             session_destroy();
         }
 
-        if ($this->apiReply != null || $this->apiIntent != "ps.rac.ppi - renda" || $this->apiIntent != "ps.rac.ppi - renda") {
-            $question = $this->questions($this->apiReply);
+        if ($dialogFlow->getApiReply() != null || $dialogFlow->getApiIntent() != "ps.rac.ppi - renda" || $dialogFlow->getApiIntent() != "ps.rac.ppi - renda") {
+            $question = $this->questions($dialogFlow->getApiReply());
         }
 
         $this->storageResponseUser($reply);
 
-        if ($this->apiIntent == "ps.rac.ppi - renda - yes" || $this->apiIntent == "ps.rac.ppi - renda - no") {
+        if ($dialogFlow->getApiIntent() == "ps.rac.ppi - renda - yes" || $dialogFlow->getApiIntent() == "ps.rac.ppi - renda - no") {
 
             $this->verifyUserAnswers($bot);
 
@@ -74,13 +70,7 @@ class ReservationOfVacanciesController extends Controller
         }
     }
 
-    public function hearsDialogFlow($bot)
-    {
-        $extras = $bot->getMessage()->getExtras();
-        $this->apiReply = $extras['apiReply'];
-        $this->apiAction = $extras['apiAction'];
-        $this->apiIntent = $extras['apiIntent'];
-    }
+
 
     function questions($apiReply){
         $question = Question::create($apiReply)
